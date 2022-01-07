@@ -245,7 +245,7 @@ public class ZLEditImageViewController: UIViewController {
         }
     }
     
-    @objc init(image: UIImage, editModel: ZLEditImageModel? = nil) {
+    @objc public init(image: UIImage, editModel: ZLEditImageModel? = nil) {
         originalImage = image.fixOrientation()
         editImage = originalImage
         editImageWithoutAdjust = originalImage
@@ -710,10 +710,10 @@ public class ZLEditImageViewController: UIViewController {
         }
         
         present(vc, animated: false) {
-            self.scrollView.alpha = 0
-            self.topShadowView.alpha = 0
-            self.bottomShadowView.alpha = 0
-            self.adjustSlider?.alpha = 0
+//            self.scrollView.alpha = 0
+//            self.topShadowView.alpha = 0
+//            self.bottomShadowView.alpha = 0
+//            self.adjustSlider?.alpha = 0
         }
     }
     
