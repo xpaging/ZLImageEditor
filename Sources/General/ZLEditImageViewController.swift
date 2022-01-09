@@ -336,10 +336,13 @@ public class ZLEditImageViewController: UIViewController {
         self.filterCollectionView?.frame = CGRect(x: 20, y: 0, width: self.view.frame.width - 40, height: ZLEditImageViewController.filterColViewH)
         
         let toolY: CGFloat = 85
+        var doneBtnW: CGFloat = 20
         
-        let doneBtnH = ZLImageEditorLayout.bottomToolBtnH
-        let doneBtnW = localLanguageTextValue(.editFinish).boundingRect(font: ZLImageEditorLayout.bottomToolTitleFont, limitSize: CGSize(width: CGFloat.greatestFiniteMagnitude, height: doneBtnH)).width + 20
-        self.doneBtn.frame = CGRect(x: self.view.frame.width-20-doneBtnW, y: toolY-2, width: doneBtnW, height: doneBtnH)
+        if doneBtn != nil {
+            let doneBtnH = ZLImageEditorLayout.bottomToolBtnH
+            doneBtnW = localLanguageTextValue(.editFinish).boundingRect(font: ZLImageEditorLayout.bottomToolTitleFont, limitSize: CGSize(width: CGFloat.greatestFiniteMagnitude, height: doneBtnH)).width + 20
+            self.doneBtn.frame = CGRect(x: self.view.frame.width-20-doneBtnW, y: toolY-2, width: doneBtnW, height: doneBtnH)
+        }
         
         self.editToolCollectionView.frame = CGRect(x: 20, y: toolY, width: self.view.bounds.width - 20 - 20 - doneBtnW - 20, height: 30)
         
@@ -482,14 +485,16 @@ public class ZLEditImageViewController: UIViewController {
         
         ZLEditToolCell.zl_register(self.editToolCollectionView)
         
-        self.doneBtn = UIButton(type: .custom)
-        self.doneBtn.titleLabel?.font = ZLImageEditorLayout.bottomToolTitleFont
-        self.doneBtn.backgroundColor = ZLImageEditorConfiguration.default().editDoneBtnBgColor
-        self.doneBtn.setTitle(localLanguageTextValue(.editFinish), for: .normal)
-        self.doneBtn.addTarget(self, action: #selector(doneBtnClick), for: .touchUpInside)
-        self.doneBtn.layer.masksToBounds = true
-        self.doneBtn.layer.cornerRadius = ZLImageEditorLayout.bottomToolBtnCornerRadius
-        self.bottomShadowView.addSubview(self.doneBtn)
+        if tools.contains(.done) {
+            self.doneBtn = UIButton(type: .custom)
+            self.doneBtn.titleLabel?.font = ZLImageEditorLayout.bottomToolTitleFont
+            self.doneBtn.backgroundColor = ZLImageEditorConfiguration.default().editDoneBtnBgColor
+            self.doneBtn.setTitle(localLanguageTextValue(.editFinish), for: .normal)
+            self.doneBtn.addTarget(self, action: #selector(doneBtnClick), for: .touchUpInside)
+            self.doneBtn.layer.masksToBounds = true
+            self.doneBtn.layer.cornerRadius = ZLImageEditorLayout.bottomToolBtnCornerRadius
+            self.bottomShadowView.addSubview(self.doneBtn)
+        }
         
         if tools.contains(.draw) {
             let drawColorLayout = UICollectionViewFlowLayout()
@@ -790,6 +795,33 @@ public class ZLEditImageViewController: UIViewController {
         }
         
         generateAdjustImageRef()
+    }
+    
+    public func getEditImage() -> UIImage {
+        var textStickers: [(ZLTextStickerState, Int)] = []
+        var imageStickers: [(ZLImageStickerState, Int)] = []
+        for (index, view) in stickersContainer.subviews.enumerated() {
+            if let ts = view as? ZLTextStickerView, let _ = ts.label.text {
+                textStickers.append((ts.state, index))
+            } else if let ts = view as? ZLImageStickerView {
+                imageStickers.append((ts.state, index))
+            }
+        }
+        
+        var hasEdit = true
+        if drawPaths.isEmpty, editRect.size == imageSize, angle == 0, mosaicPaths.isEmpty, imageStickers.isEmpty, textStickers.isEmpty, currentFilter.applier == nil, brightness == 0, contrast == 0, saturation == 0 {
+            hasEdit = false
+        }
+        
+        var resImage = self.originalImage
+        if hasEdit {
+            resImage = buildImage()
+            resImage = resImage.clipImage(angle, editRect) ?? resImage
+            if let oriDataSize = originalImage.jpegData(compressionQuality: 1)?.count {
+                resImage = resImage.compress(to: oriDataSize)
+            }
+        }
+        return resImage
     }
     
     @objc func doneBtnClick() {
@@ -1373,6 +1405,7 @@ extension ZLEditImageViewController: UICollectionViewDataSource, UICollectionVie
                 filterBtnClick()
             case .adjust:
                 adjustBtnClick()
+            case .done:
                 break
             }
         } else if collectionView == drawColorCollectionView {
