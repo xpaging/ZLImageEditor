@@ -51,8 +51,6 @@ class ZLEditToolCell: UICollectionViewCell {
             case .adjust:
                 icon.image = getImage("zl_adjust")
                 icon.highlightedImage = getImage("zl_adjust_selected")
-            case .done:
-                break
             }
         }
     }

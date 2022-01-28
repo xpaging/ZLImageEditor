@@ -202,6 +202,8 @@ public class ZLEditImageViewController: UIViewController {
     
     var panGes: UIPanGestureRecognizer!
     
+    public var showDone: Bool = true
+    
     var imageSize: CGSize {
         if self.angle == -90 || self.angle == -270 {
             return CGSize(width: self.originalImage.size.height, height: self.originalImage.size.width)
@@ -485,7 +487,7 @@ public class ZLEditImageViewController: UIViewController {
         
         ZLEditToolCell.zl_register(self.editToolCollectionView)
         
-        if tools.contains(.done) {
+        if showDone {
             self.doneBtn = UIButton(type: .custom)
             self.doneBtn.titleLabel?.font = ZLImageEditorLayout.bottomToolTitleFont
             self.doneBtn.backgroundColor = ZLImageEditorConfiguration.default().editDoneBtnBgColor
@@ -1405,8 +1407,6 @@ extension ZLEditImageViewController: UICollectionViewDataSource, UICollectionVie
                 filterBtnClick()
             case .adjust:
                 adjustBtnClick()
-            case .done:
-                break
             }
         } else if collectionView == drawColorCollectionView {
             currentDrawColor = drawColors[indexPath.row]
